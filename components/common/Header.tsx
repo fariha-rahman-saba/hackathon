@@ -158,7 +158,7 @@ export const Header = memo(function Header() {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8 h-[56px] sm:h-[68px] lg:h-[72px]">
         {/* Brand Logo */}
-        <div className="flex items-center gap-2 lg:gap-4 xl:gap-6 min-w-0">
+        <div className="flex items-center gap-2 lg:gap-3 xl:gap-5 min-w-0">
           <Link
             href="/"
             className="flex flex-col group rounded-md shrink-0"
@@ -166,13 +166,13 @@ export const Header = memo(function Header() {
             data-no-translate
           >
             <Logo className="transition-transform duration-300 group-hover:scale-[1.03]" />
-            <span className="text-[10px] text-muted-foreground font-medium hidden xl:inline mt-0.5 pl-[2.75rem] whitespace-nowrap">
+            <span className="text-[10px] text-muted-foreground font-medium hidden 2xl:inline mt-0.5 pl-[2.75rem] whitespace-nowrap">
               {t("brandSubtitle")}
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-0.5 lg:gap-1" aria-label="Main Navigation">
+          <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 min-w-0 overflow-x-auto" aria-label="Main Navigation">
             {navLinks.map((link) => {
               const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
               const Icon = link.icon;
@@ -181,13 +181,13 @@ export const Header = memo(function Header() {
                   key={link.href}
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  className={`relative inline-flex items-center gap-1.5 px-2.5 lg:px-3 py-[8px] rounded-md font-medium text-[14px] lg:text-[15px] transition-colors duration-200 shrink-0 after:absolute after:left-2.5 after:right-2.5 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-primary after:transition-transform after:duration-300 after:origin-left ${
+                  className={`relative inline-flex items-center gap-1.5 px-2 lg:px-2.5 py-[8px] rounded-md font-medium text-[13.5px] lg:text-[14.5px] transition-colors duration-200 shrink-0 after:absolute after:left-2 after:right-2 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-primary after:transition-transform after:duration-300 after:origin-left ${
                     active
                       ? "text-primary font-bold after:scale-x-100"
                       : "text-foreground hover:bg-muted/70 hover:text-primary after:scale-x-0"
                   }`}
                 >
-                  <Icon className="h-[17px] w-[17px] shrink-0" />
+                  <Icon className="h-[16px] w-[16px] shrink-0" />
                   <span className="whitespace-nowrap">{link.label}</span>
                   {link.badge ? (
                     <span className="ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[11px] font-bold leading-none text-destructive-foreground tabular-nums" aria-label={`${link.badge} new`}>
@@ -228,7 +228,7 @@ export const Header = memo(function Header() {
                       initials(session.fullName)
                     )}
                   </div>
-                  <span className="hidden xl:inline text-[13px] font-bold text-foreground max-w-[96px] truncate">
+                  <span className="hidden 2xl:inline text-[13px] font-bold text-foreground max-w-[96px] truncate">
                     {session.fullName}
                   </span>
                 </Link>
