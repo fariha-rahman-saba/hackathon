@@ -31,6 +31,7 @@ import { initials, formatDay } from "@/lib/utils";
 import { RatingStars } from "@/components/common/RatingStars";
 import { Button } from "@/components/ui/button";
 import { ReportDialog } from "@/components/common/ReportDialog";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -105,6 +106,14 @@ export default function PublicProfilePage() {
                       Edit Profile
                     </Link>
                   </Button>
+                  {profile.verificationStatus !== "verified" && (
+                    <Button asChild variant="secondary" className="gap-2 font-bold">
+                      <Link href="/profile/edit#verify-profile">
+                        <CheckCircle2 className="h-4 w-4" />
+                        {profile.verificationStatus === "pending" ? "Verification Pending" : "Verify Profile"}
+                      </Link>
+                    </Button>
+                  )}
                   <Button asChild variant="ghost" className="gap-2 font-semibold">
                     <Link href="/change-password">
                       <KeyRound className="h-4 w-4" />
@@ -142,6 +151,7 @@ export default function PublicProfilePage() {
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground break-words">{profile.fullName}</h1>
+              <VerifiedBadge status={profile.verificationStatus} />
               <span
                 className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                   profile.userGroup === "og" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
@@ -150,6 +160,11 @@ export default function PublicProfilePage() {
               >
                 {groupShort(profile.userGroup)}
               </span>
+              {profile.isBanned && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-destructive/15 text-destructive border border-destructive/30">
+                  Suspended
+                </span>
+              )}
             </div>
             <p className="text-sm font-semibold text-muted-foreground">
               {ageText ? `${ageText} • ` : ""}

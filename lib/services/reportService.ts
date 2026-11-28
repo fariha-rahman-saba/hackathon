@@ -15,6 +15,10 @@ export function rowToReport(row: any): Report {
     targetType: row.target_type,
     targetId: row.target_id,
     reason: row.reason,
+    status: row.status ?? "pending",
+    resolutionNote: row.resolution_note ?? null,
+    resolvedBy: row.resolved_by ?? null,
+    resolvedAt: row.resolved_at ?? null,
     createdAt: row.created_at ?? new Date().toISOString(),
   };
 }
@@ -90,6 +94,7 @@ export async function reportContent(
     targetType,
     targetId,
     reason,
+    status: "pending",
     createdAt: new Date().toISOString(),
   };
 

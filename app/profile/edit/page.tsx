@@ -41,6 +41,7 @@ import { useProfileCompletion } from "@/lib/profileCompletion";
 import { TagPicker, AgeGroupBadge } from "@/components/profile/TagPicker";
 import { AvailabilityPicker } from "@/components/profile/AvailabilityPicker";
 import { MyLocationPicker, type MyLocation } from "@/components/profile/MyLocationPicker";
+import { ProfileVerificationSection } from "@/components/profile/ProfileVerificationSection";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -534,6 +535,12 @@ export default function EditProfilePage() {
             </div>
           </div>
         </form>
+
+        {session && (
+          <div className="pt-2">
+            <ProfileVerificationSection session={session} />
+          </div>
+        )}
       </div>
     </AuthGuard>
   );

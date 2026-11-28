@@ -14,6 +14,13 @@ export function requireUser() {
   const state = useAppStore.getState();
   const user = state.users.find((item) => item.id === state.sessionUserId);
   if (!user) throw new ServiceError("Please log in to continue.");
+  if (user.isBanned) {
+    throw new ServiceError(
+      user.banReason
+        ? `Your account is suspended: ${user.banReason}`
+        : "Your account has been suspended by an administrator.",
+    );
+  }
   return user;
 }
 

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Dialog } from "@/components/ui/dialog";
 import { ConnectionButton } from "@/components/connections/ConnectionButton";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 
 export function PersonCard({ person }: { person: Profile }) {
   const session = useSession();
@@ -73,10 +74,11 @@ export function PersonCard({ person }: { person: Profile }) {
             </Link>
 
             <div className="space-y-1.5 min-w-0 flex-1">
-              <Link href={`/profile/${person.id}`} className="block">
+              <Link href={`/profile/${person.id}`} className="flex items-center gap-1.5 min-w-0">
                 <h3 className="font-bold text-lg sm:text-xl text-foreground group-hover/card:text-primary transition-colors truncate">
                   {person.fullName}
                 </h3>
+                <VerifiedBadge status={person.verificationStatus} compact />
               </Link>
               <div className="flex flex-wrap items-center gap-2">
                 <span
