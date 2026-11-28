@@ -755,6 +755,8 @@ export function seedState(): AppState {
     ],
     reports: [],
     blocks: [],
+    verificationRequests: [],
+    warnings: [],
     safetyAck: {
       c1: ["u5", "u1"],
     },

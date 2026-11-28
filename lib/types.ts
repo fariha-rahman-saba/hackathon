@@ -14,6 +14,14 @@ export type PostStatus = "open" | "in_progress" | "completed" | "closed";
 export type RequestStatus = "pending" | "accepted" | "rejected" | "cancelled" | "completed";
 export type TransactionStatus = "pending" | "successful" | "failed";
 export type ReportTarget = "post" | "user";
+export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
+export type VerificationDocType = "national_id" | "passport" | "student_id" | "senior_card" | "other";
+export type ReportStatus =
+  | "pending"
+  | "resolved_deleted"
+  | "resolved_warned"
+  | "resolved_banned"
+  | "dismissed_fake";
 
 export type Category =
   | "Cooking"
@@ -45,6 +53,13 @@ export interface Profile {
   contactMethod: ContactMethod;
   phone: string | null;
   userGroup: UserGroup;
+  isAdmin?: boolean;
+  isBanned?: boolean;
+  banReason?: string | null;
+  warningsCount?: number;
+  lastActiveAt?: string | null;
+  verificationStatus?: VerificationStatus;
+  verifiedAt?: string | null;
   createdAt: string;
 }
 
@@ -150,7 +165,10 @@ export type NotificationType =
   | "payment"
   | "connection_request"
   | "connection_accepted"
-  | "direct_message";
+  | "direct_message"
+  | "warning"
+  | "verification_approved"
+  | "verification_rejected";
 
 export interface Notification {
   id: string;
@@ -204,6 +222,35 @@ export interface Report {
   targetType: ReportTarget;
   targetId: string;
   reason: string;
+  status?: ReportStatus;
+  resolutionNote?: string | null;
+  resolvedBy?: string | null;
+  resolvedAt?: string | null;
+  createdAt: string;
+}
+
+/** profile_verifications */
+export interface VerificationRequest {
+  id: string;
+  userId: string;
+  documentType: VerificationDocType;
+  documentUrl: string;
+  documentName: string;
+  notes: string;
+  status: "pending" | "approved" | "rejected";
+  adminNotes?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+}
+
+/** user_warnings */
+export interface UserWarning {
+  id: string;
+  userId: string;
+  issuedBy: string;
+  reason: string;
+  reportId?: string | null;
   createdAt: string;
 }
 
@@ -243,6 +290,8 @@ export interface AppState {
   activities: Activity[];
   reports: Report[];
   blocks: Block[];
+  verificationRequests?: VerificationRequest[];
+  warnings?: UserWarning[];
   /** conversationId -> user ids who confirmed the safety tips */
   safetyAck: Record<string, string[]>;
   sessionUserId: string | null;

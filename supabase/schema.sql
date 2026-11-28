@@ -26,6 +26,13 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     contact_method TEXT NOT NULL CHECK (contact_method IN ('chat', 'phone')) DEFAULT 'chat',
     phone TEXT,
     user_group TEXT NOT NULL CHECK (user_group IN ('og', 'yg')),
+    is_admin BOOLEAN NOT NULL DEFAULT false,
+    is_banned BOOLEAN NOT NULL DEFAULT false,
+    ban_reason TEXT,
+    warnings_count INTEGER NOT NULL DEFAULT 0,
+    last_active_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+    verification_status TEXT NOT NULL CHECK (verification_status IN ('unverified', 'pending', 'verified', 'rejected')) DEFAULT 'unverified',
+    verified_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
@@ -113,7 +120,7 @@ CREATE TABLE IF NOT EXISTS public.messages (
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    type TEXT NOT NULL CHECK (type IN ('request_new', 'request_accepted', 'request_rejected', 'message', 'activity', 'completed', 'review', 'payment')),
+    type TEXT NOT NULL CHECK (type IN ('request_new', 'request_accepted', 'request_rejected', 'message', 'activity', 'completed', 'review', 'payment', 'connection_request', 'connection_accepted', 'direct_message', 'warning', 'verification_approved', 'verification_rejected')),
     title TEXT NOT NULL,
     body TEXT NOT NULL,
     href TEXT NOT NULL,
@@ -163,6 +170,10 @@ CREATE TABLE IF NOT EXISTS public.reports (
     target_type TEXT NOT NULL CHECK (target_type IN ('post', 'user')),
     target_id TEXT NOT NULL,
     reason TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('pending', 'resolved_deleted', 'resolved_warned', 'resolved_banned', 'dismissed_fake')) DEFAULT 'pending',
+    resolution_note TEXT,
+    resolved_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    resolved_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
@@ -173,6 +184,31 @@ CREATE TABLE IF NOT EXISTS public.blocks (
     blocked_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     CONSTRAINT unique_block UNIQUE (blocker_id, blocked_id)
+);
+
+-- 14. Profile Verifications Table (Document verification requests)
+CREATE TABLE IF NOT EXISTS public.profile_verifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    document_type TEXT NOT NULL CHECK (document_type IN ('national_id', 'passport', 'student_id', 'senior_card', 'other')),
+    document_url TEXT NOT NULL,
+    document_name TEXT NOT NULL DEFAULT 'document',
+    notes TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
+    admin_notes TEXT,
+    reviewed_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 15. User Warnings Table (Admin moderation warnings)
+CREATE TABLE IF NOT EXISTS public.user_warnings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    issued_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    reason TEXT NOT NULL,
+    report_id UUID REFERENCES public.reports(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
 -- ==============================================================================
@@ -191,6 +227,19 @@ ALTER TABLE public.activities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.blocks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.requirement_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profile_verifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_warnings ENABLE ROW LEVEL SECURITY;
+
+-- Helper function to check admin role without RLS recursion
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND is_admin = true
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 -- Profiles: Public read (phone/sensitive data hidden in view or API layer), user update own
 CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles
@@ -293,8 +342,34 @@ CREATE POLICY "Participants can update transactions" ON public.transactions
 CREATE POLICY "Users can create reports" ON public.reports
     FOR INSERT WITH CHECK (auth.uid() = reporter_id);
 
+CREATE POLICY "Admins can view and update reports" ON public.reports
+    FOR ALL USING (public.is_admin());
+
+CREATE POLICY "Admins can delete any post" ON public.posts
+    FOR DELETE USING (public.is_admin());
+
+CREATE POLICY "Admins can update any profile" ON public.profiles
+    FOR UPDATE USING (public.is_admin());
+
 CREATE POLICY "Users can manage blocks" ON public.blocks
     FOR ALL USING (auth.uid() = blocker_id);
+
+-- Profile Verifications
+CREATE POLICY "Users can submit own verification" ON public.profile_verifications
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can view own verifications or admins all" ON public.profile_verifications
+    FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Admins can update verifications" ON public.profile_verifications
+    FOR UPDATE USING (public.is_admin());
+
+-- User Warnings
+CREATE POLICY "Users can view own warnings or admins all" ON public.user_warnings
+    FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Admins can issue warnings" ON public.user_warnings
+    FOR INSERT WITH CHECK (public.is_admin());
 
 -- Realtime publications
 ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;

@@ -11,6 +11,9 @@ import {
   UserPlus,
   UserCheck,
   MessageCircle,
+  AlertTriangle,
+  BadgeCheck,
+  ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
 import type { NotificationType } from "@/lib/types";
@@ -28,6 +31,9 @@ export const NOTIFICATION_STYLE: Record<NotificationType, { icon: LucideIcon; cl
   connection_request: { icon: UserPlus, className: "bg-violet-50 text-violet-700" },
   connection_accepted: { icon: UserCheck, className: "bg-emerald-50 text-emerald-700" },
   direct_message: { icon: MessageCircle, className: "bg-[#E7EEE4] text-[#315B4B]" },
+  warning: { icon: AlertTriangle, className: "bg-amber-50 text-amber-700" },
+  verification_approved: { icon: BadgeCheck, className: "bg-emerald-50 text-emerald-700" },
+  verification_rejected: { icon: ShieldAlert, className: "bg-rose-50 text-rose-700" },
 };
 
 /** Notification types that represent chat messages (counted on chat badges, not the bell). */

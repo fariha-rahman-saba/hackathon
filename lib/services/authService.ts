@@ -34,6 +34,13 @@ export function rowToProfile(row: any): Profile {
     contactMethod: row.contact_method ?? "chat",
     phone: row.phone ?? null,
     userGroup: (row.user_group as UserGroup) || "yg",
+    isAdmin: Boolean(row.is_admin),
+    isBanned: Boolean(row.is_banned),
+    banReason: row.ban_reason ?? null,
+    warningsCount: typeof row.warnings_count === "number" ? row.warnings_count : 0,
+    lastActiveAt: row.last_active_at ?? row.updated_at ?? row.created_at ?? null,
+    verificationStatus: row.verification_status ?? "unverified",
+    verifiedAt: row.verified_at ?? null,
     createdAt: row.created_at ?? new Date().toISOString(),
   };
 }
@@ -62,6 +69,13 @@ export function profileToRow(profile: Partial<Profile>): Record<string, any> {
   if (profile.contactMethod !== undefined) row.contact_method = profile.contactMethod;
   if (profile.phone !== undefined) row.phone = profile.phone;
   if (profile.userGroup !== undefined) row.user_group = profile.userGroup;
+  if (profile.isAdmin !== undefined) row.is_admin = profile.isAdmin;
+  if (profile.isBanned !== undefined) row.is_banned = profile.isBanned;
+  if (profile.banReason !== undefined) row.ban_reason = profile.banReason;
+  if (profile.warningsCount !== undefined) row.warnings_count = profile.warningsCount;
+  if (profile.lastActiveAt !== undefined) row.last_active_at = profile.lastActiveAt;
+  if (profile.verificationStatus !== undefined) row.verification_status = profile.verificationStatus;
+  if (profile.verifiedAt !== undefined) row.verified_at = profile.verifiedAt;
   row.updated_at = new Date().toISOString();
   return row;
 }
