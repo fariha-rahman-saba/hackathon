@@ -12,6 +12,7 @@ import {
   Compass,
   FileCheck2,
   Users,
+  ShieldAlert,
 } from "lucide-react";
 import { useUnreadConnectionRequestCount, useUnreadDmCount } from "@/lib/services/notificationService";
 import { useSession, signOut } from "@/lib/services/authService";
@@ -143,6 +144,9 @@ export const Header = memo(function Header() {
     { href: "/search", label: t("nav.search"), icon: Search },
     ...(session
       ? [{ href: "/connections", label: language === "ja" ? "つながり" : "Connections", icon: Users, badge: connectionBadge }]
+      : []),
+    ...(session?.isAdmin
+      ? [{ href: "/admin", label: language === "ja" ? "管理" : "Admin", icon: ShieldAlert }]
       : []),
   ];
 
