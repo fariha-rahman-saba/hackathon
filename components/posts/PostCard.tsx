@@ -12,6 +12,7 @@ import { initials } from "@/lib/utils";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 import { ExchangeBadge, PostTypeBadge, POST_TYPE_ACCENT } from "@/components/posts/PostBadges";
 import { ReportDialog } from "@/components/common/ReportDialog";
 import { PostStatusBadge } from "@/components/common/StatusBadge";
@@ -126,9 +127,12 @@ export const PostCard = memo(function PostCard({ post, showStatus = false }: { p
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-foreground transition-colors group-hover/author:text-primary">
-                {author.fullName}
-              </p>
+              <div className="flex items-center gap-1 min-w-0">
+                <p className="truncate text-sm font-bold text-foreground transition-colors group-hover/author:text-primary">
+                  {author.fullName}
+                </p>
+                <VerifiedBadge status={author.verificationStatus} compact />
+              </div>
               <p className="truncate text-[11px] font-medium text-muted-foreground">
                 {author.userGroup === "og" ? "Older Generation" : "Younger Generation"} · {postedAgo(post.createdAt)}
               </p>
